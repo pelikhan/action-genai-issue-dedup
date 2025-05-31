@@ -11,6 +11,6 @@
     "lint": "npx --yes prettier --write genaisrc/",
     "typecheck": "genaiscript scripts compile",
     "configure": "genaiscript action configure action-issue-dedup --out .",
-    "start": "genaiscript run action-issue-dedup --include genaiscript/action/**/*.genai.mts --github-workspace"
+    "start": "genaiscript run action-issue-dedup --include \"/genaiscript/action/**/*.genai.mts\" --github-workspace"
   }
 }
