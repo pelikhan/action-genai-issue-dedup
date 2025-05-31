@@ -29,26 +29,24 @@ with:
 ```yaml
 name: Run action-issue-dedup Action
 on:
-    workflow_dispatch:
-    push:
+  issues:
+    types: [opened, edited]
 permissions:
-    contents: read
-    models: read
+  contents: read
+  models: read
+  issues: write
 concurrency:
-    group: action-issue-dedup-${{ github.workflow }}-${{ github.ref }}
-    cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.event.issue.number }}
+  cancel-in-progress: true
 jobs:
   run-script:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
       - name: Run action-issue-dedup Action
-        uses: action-issue-dedup-action@main
+        uses: pelikhan/action-genai-issue-dedup@v0.0.3
         with:
-          issue: ${{ ... }}
-          github_token: ${{ ... }}
-          debug: ${{ ... }}
+          issue: ${{ github.event.issue.number }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 ```
 
 ## Development
