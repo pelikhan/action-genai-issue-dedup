@@ -1,6 +1,6 @@
 name: Run action-issue-dedup Action
 on:
-  issue:
+  issues:
     types: [opened, edited]
 permissions:
   contents: read
