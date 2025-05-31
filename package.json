@@ -1,0 +1,16 @@
+{
+  "name": "action-issue-dedup-action",
+  "version": "1.142.0",
+  "description": "This script checks if an issue is a duplicate of another issue in the same repository.",
+  "dependencies": {
+    "genaiscript": "^1.142.0"
+  },
+  "scripts": {
+    "docker:build": "docker build -t action-issue-dedup-action .",
+    "docker:start": "docker run -e GITHUB_TOKEN action-issue-dedup-action",
+    "lint": "npx --yes prettier --write genaisrc/",
+    "typecheck": "genaiscript scripts compile",
+    "configure": "genaiscript action configure action-issue-dedup --out .",
+    "start": "genaiscript run action-issue-dedup --github-workspace"
+  }
+}
