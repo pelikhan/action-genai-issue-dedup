@@ -1,0 +1,19 @@
+name: Run action-issue-dedup Action
+on:
+  issue:
+    types: [opened, edited]
+permissions:
+  contents: read
+  models: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.issue.number }}
+  cancel-in-progress: true
+jobs:
+  run-script:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run action-issue-dedup Action
+        uses: action-issue-dedup-action@main
+        with:
+          issue: ${{ github.event.issue.number }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
