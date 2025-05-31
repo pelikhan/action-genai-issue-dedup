@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Run action-issue-dedup Action
-        uses: pelikhan/action-issue-dedup-action@main
+        uses: pelikhan/action-genai-issue-dedup@v0.0.0
         with:
           issue: ${{ github.event.issue.number }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
