@@ -21,30 +21,32 @@ Add the following to your step in your workflow file:
 uses: pelikhan/action-genai-issue-dedup@main
 with:
   github_token: ${{ secrets.GITHUB_TOKEN }}
+  github_issue: ${{ github.event.issue.number }}
 ```
 
 ## Example
 
 ```yaml
-name: My action
+name: Find Duplicate Issues
 on:
-    issue:
+  issues:
+    types: [opened, edited]
 permissions:
-    contents: read
-    issues: write
-    # pull-requests: write
-    models: read
+  contents: read
+  models: read
+  issues: write
 concurrency:
-    group: ${{ github.workflow }}-${{ github.ref }}
-    cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.event.issue.number }}
+  cancel-in-progress: true
 jobs:
-  run-script:
+  genai-issue-dedup:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: pelikhan/action-genai-issue-dedup@main
+      - name: Run action-issue-dedup Action
+        uses: pelikhan/action-genai-issue-dedup@main
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_issue: ${{ github.event.issue.number }}
 ```
 
 ## Development
