@@ -1,14 +1,13 @@
-# action-issue-dedup action
-
-A custom GitHub Action that runs the script `action-issue-dedup`.
+# action action
 
 This script checks if an issue is a duplicate of another issue in the same repository.
 
 ## Inputs
 
-- `issue`: Issue number to deduplicate actions for (default: `2`)
 - `github_token`: GitHub token with `models: read` permission at least. (required)
-- `debug`: Enable debug logging. (default: `*`)
+- `github_issue`: GitHub issue number to use when generating comments.
+- `debug`: Enable debug logging.
+
 ## Outputs
 
 - `text`: The generated text output.
@@ -16,36 +15,35 @@ This script checks if an issue is a duplicate of another issue in the same repos
 
 ## Usage
 
+Add the following to your step in your workflow file:
+
 ```yaml
-uses: action-issue-dedup-action
+uses: pelikhan/action-genai-issue-dedup@main
 with:
-  issue: ${{ ... }}
-  github_token: ${{ ... }}
-  debug: ${{ ... }}
+  github_token: ${{ secrets.GITHUB_TOKEN }}
 ```
 
 ## Example
 
 ```yaml
-name: Run action-issue-dedup Action
+name: My action
 on:
-  issues:
-    types: [opened, edited]
+    issue:
 permissions:
-  contents: read
-  models: read
-  issues: write
+    contents: read
+    issues: write
+    # pull-requests: write
+    models: read
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.issue.number }}
-  cancel-in-progress: true
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
 jobs:
   run-script:
     runs-on: ubuntu-latest
     steps:
-      - name: Run action-issue-dedup Action
-        uses: pelikhan/action-genai-issue-dedup@v0.0.3
+      - uses: actions/checkout@v4
+      - uses: pelikhan/action-genai-issue-dedup@main
         with:
-          issue: ${{ github.event.issue.number }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
 ```
 
@@ -88,4 +86,24 @@ npm run docker:build
 To run the action locally in Docker (build it first), use:
 ```bash
 npm run docker:start
+```
+
+To run the action using [act](https://nektosact.com/), first install the act CLI:
+
+```bash
+npm run act:install
+```
+
+Then, you can run the action with:
+
+```bash
+npm run act
+```
+
+## Upgrade
+
+The GenAIScript version is pinned in the `package.json` file. To upgrade it, run:
+
+```bash
+npm run upgrade
 ```

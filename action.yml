@@ -1,5 +1,5 @@
-name: action-issue-dedup
-description: Action Deduplication
+name: action-genai-issue-dedup
+description: GitHub Action Deduplication
 inputs:
   issue:
     description: Issue number to deduplicate actions for
@@ -8,10 +8,11 @@ inputs:
   github_token:
     description: "GitHub token with `models: read` permission at least."
     required: true
+  github_issue:
+    description: GitHub issue number to use when generating comments.
   debug:
     description: Enable debug logging.
     required: false
-    default: "*"
 outputs:
   text:
     description: The generated text output.

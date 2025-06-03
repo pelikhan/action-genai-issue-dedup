@@ -1,22 +1,15 @@
 script({
-  title: "Action Deduplication",
+  title: "GitHub Action Deduplication",
   description: `This script checks if an issue is a duplicate of another issue in the same repository.`,
   branding: {
     icon: "copy",
     color: "blue",
-  },
-  parameters: {
-    issue: {
-      type: "number",
-      description: "Issue number to deduplicate actions for",
-      default: 2,
-    },
-  },
+  }
 });
 const { output } = env;
-const issue = await github.getIssue(env.vars.issue);
+const issue = await github.getIssue();
 if (!issue) {
-  throw new Error(`Issue #${env.vars.issue} not found`);
+  throw new Error(`Issue not found`);
 }
 output.heading(2, `Deduplicating issue #${issue.number}: ${issue.title}`);
 output.itemLink(`issue`, issue.html_url);

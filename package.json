@@ -1,16 +1,19 @@
 {
-  "name": "action-issue-dedup-action",
-  "version": "1.142.0",
   "description": "This script checks if an issue is a duplicate of another issue in the same repository.",
   "dependencies": {
-    "genaiscript": "^1.142.0"
+    "genaiscript": "1.142.3"
   },
   "scripts": {
-    "docker:build": "docker build -t action-issue-dedup-action .",
-    "docker:start": "docker run -e GITHUB_TOKEN action-issue-dedup-action",
+    "upgrade": "npx -y npm-check-updates -u && npm install",
+    "docker:build": "docker build -t pelikhan-action-genai-issue-dedup .",
+    "docker:start": "docker run -e GITHUB_TOKEN pelikhan-action-genai-issue-dedup",
+    "act:install": "gh extension install https://github.com/nektos/gh-act",
+    "act": "gh act",
     "lint": "npx --yes prettier --write genaisrc/",
+    "fix": "genaiscript scripts fix",
     "typecheck": "genaiscript scripts compile",
-    "configure": "genaiscript action configure action-issue-dedup --out .",
-    "start": "genaiscript run action-issue-dedup --include \"/genaiscript/action/**/*.genai.mts\" --github-workspace"
+    "configure": "genaiscript configure action",
+    "test": "echo 'No tests defined.'",
+    "start": "genaiscript run action --github-workspace"
   }
 }
