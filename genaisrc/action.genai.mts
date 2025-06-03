@@ -19,7 +19,7 @@ output.itemLink(`issue`, issue.html_url);
 const otherIssues = await github.listIssues({
   state: "open",
   sort: "updated",
-  direction: "desc",
+  direction: "asc",
   count: 30,
 });
 for (const otherIssue of otherIssues) {
@@ -54,7 +54,7 @@ If NEW_ISSUE is a duplicate of OTHER_ISSUE, return "DUP". If it is not, return "
     {
       flexTokens: 12000,
       choices: ["UNI", "DUP"],
-      model: "github:gpt-4.1-mini",
+      model: "small",
     }
   );
 
