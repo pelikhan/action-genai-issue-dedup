@@ -50,7 +50,7 @@ You are tasked to detect if issue ${newIssueRef} is a duplicate of issue ${other
 ## Output format
 Explain your reasoning step by step.
 If NEW_ISSUE is a duplicate of OTHER_ISSUE, return "DUP". If it is not, return "UNI".
-`;
+`.role("system");
     },
     {
       flexTokens: 12000,
