@@ -1,10 +1,6 @@
 name: GenAI Issue Deduplicator
 description: GitHub Action Deduplication
 inputs:
-  issue:
-    description: Issue number to deduplicate actions for
-    required: false
-    default: 2
   github_token:
     description: "GitHub token with `models: read` permission at least."
     required: true

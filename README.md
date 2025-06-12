@@ -5,24 +5,8 @@ This script checks if an issue is a duplicate of another issue in the same repos
 ## Inputs
 
 - `github_token`: GitHub token with `models: read` permission at least. (required)
-- `github_issue`: GitHub issue number to use when generating comments.
+- `github_issue`: GitHub issue number to use when generating comments. (required)
 - `debug`: Enable debug logging.
-
-## Outputs
-
-- `text`: The generated text output.
-- `data`: The generated JSON data output, parsed and stringified.
-
-## Usage
-
-Add the following to your step in your workflow file:
-
-```yaml
-uses: pelikhan/action-genai-issue-dedup@v0
-with:
-  github_token: ${{ secrets.GITHUB_TOKEN }}
-  github_issue: ${{ github.event.issue.number }}
-```
 
 ## Example
 
