@@ -9,11 +9,6 @@ inputs:
   debug:
     description: Enable debug logging.
     required: false
-outputs:
-  text:
-    description: The generated text output.
-  data:
-    description: The generated JSON data output, parsed and stringified.
 branding:
   icon: copy
   color: blue
