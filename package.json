@@ -18,6 +18,7 @@
     "test": "echo 'No tests defined.'",
     "action": "genaiscript run action",
     "dev": "GITHUB_ISSUE=6 genaiscript run action",
-    "start": "npm run action -- --github-workspace --no-run-trace --no-output-trace"
+    "start": "npm run action -- --github-workspace --no-run-trace --no-output-trace",
+    "release": "sh release.sh"
   }
 }
