@@ -1,6 +1,9 @@
-# action action
+# GenAI Issue Deduplicator
 
 This script checks if an issue is a duplicate of another issue in the same repository.
+
+> [!NOTE]
+> This action uses GitHub Models for LLM inference.
 
 ## Inputs
 
