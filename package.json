@@ -1,7 +1,7 @@
 {
   "description": "This script checks if an issue is a duplicate of another issue in the same repository.",
   "dependencies": {
-    "genaiscript": "1.142.3"
+    "genaiscript": "1.142.5"
   },
   "scripts": {
     "upgrade": "npx -y npm-check-updates -u && npm install",
@@ -14,7 +14,8 @@
     "typecheck": "genaiscript scripts compile",
     "configure": "genaiscript configure action",
     "test": "echo 'No tests defined.'",
-    "action": "genaiscript run action-genai-issue-dedup",
+    "action": "genaiscript run action",
+    "dev": "GITHUB_ISSUE=6 genaiscript run action",
     "start": "npm run action -- --github-workspace --out-output $GITHUB_STEP_SUMMARY"
   }
 }

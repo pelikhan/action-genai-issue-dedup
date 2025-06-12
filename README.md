@@ -18,7 +18,7 @@ This script checks if an issue is a duplicate of another issue in the same repos
 Add the following to your step in your workflow file:
 
 ```yaml
-uses: pelikhan/action-genai-issue-dedup@main
+uses: pelikhan/action-genai-issue-dedup@v0
 with:
   github_token: ${{ secrets.GITHUB_TOKEN }}
   github_issue: ${{ github.event.issue.number }}
@@ -43,7 +43,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Run action-issue-dedup Action
-        uses: pelikhan/action-genai-issue-dedup@main
+        uses: pelikhan/action-genai-issue-dedup@v0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           github_issue: ${{ github.event.issue.number }}

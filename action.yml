@@ -1,4 +1,4 @@
-name: action-genai-issue-dedup
+name: GenAI Issue Deduplicator
 description: GitHub Action Deduplication
 inputs:
   issue:
