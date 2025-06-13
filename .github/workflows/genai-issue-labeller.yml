@@ -1,7 +1,7 @@
-name: genai issue labeller
+name: GenAI Issue Labeller
 on:
   issues:
-    types: [opened, reopened, edited]
+    types: [opened]
 permissions:
   contents: read
   issues: write
