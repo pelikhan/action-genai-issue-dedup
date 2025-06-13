@@ -97,7 +97,7 @@ for (let i = 0; i < otherIssues.length; i += issuesPerGroup) {
           `number: ${otherIssue.number}
 ${otherIssue.title}
 ${otherIssue.body}`,
-          { flex: 1 }
+          { flex: 1 },
         );
       const newIssueRef = ctx.def(
         "NEW_ISSUE",
@@ -105,7 +105,7 @@ ${otherIssue.body}`,
 ${issue.body}`,
         {
           maxTokens: tokensPerIssue * 2,
-        }
+        },
       );
 
       ctx.$`You are tasked to detect if issue ${newIssueRef} is a duplicate of some of issues in ${otherIssueRef}.
@@ -139,7 +139,7 @@ Respond in CSV format, with the following columns:
       label: `Check for duplicates with ${otherIssueGroup
         .map((i) => i.number)
         .join(", ")}`,
-    }
+    },
   );
   if (res.error) {
     console.error(`Error checking issues: ${res.error.message}`);
@@ -160,7 +160,7 @@ Respond in CSV format, with the following columns:
     };
     if (/DUP/.test(verdict) && !/UNI/.test(verdict)) {
       const dupIssue = otherIssueGroup.find(
-        (i) => i.number === Number(issue_number)
+        (i) => i.number === Number(issue_number),
       );
       if (dupIssue) duplicates.push(dupIssue);
     }
