@@ -69,7 +69,7 @@ const otherIssues = (
   await github.listIssues({
     state,
     sort: "updated",
-    direction: "asc",
+    direction: "desc",
     count,
     since: since || undefined,
     labels,
@@ -122,8 +122,8 @@ Respond in CSV format, with the following columns:
 
 ## Example:
 
-123, "This issue is a duplicate of issue 123 because it has the same title and body", DUP
-456, "This issue is unique because it has a different title and body", UNI
+123, "same title and body", DUP
+456, "different title and body", UNI
 
 `.role("system");
       ctx.$`issue_number, reasoning, verdict
