@@ -1,5 +1,11 @@
 name: GenAI Find Duplicate Issues
 on:
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        type: number
+        description: 'Issue number to process'
+        required: false
   issues:
     types: [opened, edited]
 permissions:
@@ -16,5 +22,5 @@ jobs:
         uses: pelikhan/action-genai-issue-dedup@main
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          github_issue: ${{ github.event.issue.number }}
+          github_issue: ${{ github.event.inputs.issue_number || github.event.issue.number }}
           debug: "script*"
