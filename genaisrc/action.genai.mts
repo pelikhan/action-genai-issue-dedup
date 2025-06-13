@@ -175,4 +175,4 @@ Respond in CSV format, with the following columns:
 if (!duplicates.length) cancel("No duplicates found.");
 
 output.p(`The following issues might be duplicates:`);
-for (const dup of duplicates) output.item(`#${dup.number}: ${dup.title}`);
+for (const dup of duplicates) output.item(`#${dup.number}`);

@@ -1,4 +1,4 @@
-name: Find Duplicate Issues
+name: GenAI Find Duplicate Issues
 on:
   issues:
     types: [opened, edited]
