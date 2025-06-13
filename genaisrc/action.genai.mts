@@ -139,7 +139,7 @@ Respond in CSV format, with the following columns:
     }
   );
   if (res.error) {
-    console.error(`Error checking issues: ${res.error}`);
+    console.error(`Error checking issues: ${res.error.message}`);
     continue;
   }
 
