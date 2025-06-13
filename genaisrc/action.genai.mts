@@ -1,76 +1,175 @@
 script({
   title: "GitHub Action Deduplication",
   description: `This script checks if an issue is a duplicate of another issue in the same repository.`,
+  accept: "none",
   branding: {
     icon: "copy",
-    color: "blue",
+    color: "yellow",
+  },
+  parameters: {
+    count: {
+      type: "integer",
+      default: 30,
+      minimum: 1,
+      description: "Number of issues to check for duplicates",
+    },
+    since: {
+      type: "string",
+      description:
+        "Only check issues created after this date (ISO 8601 format)",
+    },
+    labels: {
+      type: "string",
+      description: "List of labels to filter issues by",
+    },
+    state: {
+      type: "string",
+      default: "open",
+      description: "State of the issues to check (open, closed, all)",
+      enum: ["open", "closed", "all"],
+    },
+    maxDuplicates: {
+      type: "integer",
+      default: 3,
+      minimum: 1,
+      description: "Maximum number of duplicates to check for",
+    },
+    tokensPerIssue: {
+      type: "integer",
+      default: 1000,
+      minimum: 100,
+      maximum: 5000,
+      description:
+        "Number of tokens to use for each issue when checking for duplicates",
+    },
   },
 });
-const { output } = env;
-const { runUrl } = await github.info();
+const { output, vars, dbg } = env;
 const issue = await github.getIssue();
-if (!issue) {
-  throw new Error(`Issue not found`);
-}
-output.heading(2, `Deduplicating issue #${issue.number}: ${issue.title}`);
-output.itemLink(`issue`, issue.html_url);
+if (!issue)
+  throw new Error(`Issue not found, did you forget to set "github_issue"?`);
+const { maxDuplicates, count, since, labels, state, tokensPerIssue } = vars as {
+  maxDuplicates: number;
+  count: number;
+  since: string;
+  labels: string;
+  state: "open" | "closed" | "all";
+  tokensPerIssue: number;
+};
+dbg(`issue`, issue.html_url);
+dbg(`state: %s`, state);
+dbg(`labels: %s`, labels);
+dbg(`count: %s`, count);
+dbg(`since: %s`, since);
+dbg(`max duplicates: %s`, maxDuplicates);
 
 // we only have 16k tokens, so we need to be careful with the prompt size
 // issuing one request per issue
-const otherIssues = await github.listIssues({
-  state: "open",
-  sort: "updated",
-  direction: "asc",
-  count: 30,
-});
-for (const otherIssue of otherIssues) {
-  if (otherIssue.number === issue.number) {
-    continue; // Skip the issue itself
-  }
+const otherIssues = (
+  await github.listIssues({
+    state,
+    sort: "updated",
+    direction: "asc",
+    count,
+    since,
+    labels,
+  })
+).filter(({ number }) => number !== issue.number);
+dbg(`Found %d issues in the repository`, otherIssues.length);
 
-  output.heading(3, `Checking issue #${otherIssue.number} for duplicates`);
-  const otherComments = await github.listIssueComments(otherIssue.number);
+const duplicates: GitHubIssue[] = [];
+const maxFlexTokens = 12000;
+const issuesPerGroup = Math.ceil(maxFlexTokens / tokensPerIssue);
+
+dbg(`tokens per issue: %s`, tokensPerIssue);
+dbg(`issues per group: %s`, issuesPerGroup);
+
+for (let i = 0; i < otherIssues.length; i += issuesPerGroup) {
+  const otherIssueGroup = otherIssues.slice(i, i + issuesPerGroup);
+  if (!otherIssueGroup.length) continue;
+
   const res = await runPrompt(
     (ctx) => {
-      const newIssueRef = ctx.def("NEW_ISSUE", `${issue.title} ${issue.body}`, {
-        flex: 5,
-      });
-      const otherIssueRef = ctx.def(
-        "OTHER_ISSUE",
-        `${otherIssue.title}
-${otherIssue.body}
-${otherComments.map((c) => `- ${c.user.login}: ${c.body}`).join("\n")}`,
-        { flex: 1 },
+      let otherIssueRef: string;
+      for (const otherIssue of otherIssueGroup)
+        otherIssueRef = ctx.def(
+          "OTHER_ISSUE",
+          `number: ${otherIssue.number}
+${otherIssue.title}
+${otherIssue.body}`,
+          { flex: 1 }
+        );
+      const newIssueRef = ctx.def(
+        "NEW_ISSUE",
+        `${issue.title}
+${issue.body}`,
+        {
+          maxTokens: tokensPerIssue * 2,
+        }
       );
 
-      ctx.$`## Role and Task
-You are an expert GitHub project maintainer and issue tracking expert.
-You are tasked to detect if issue ${newIssueRef} is a duplicate of issue ${otherIssueRef}.
+      ctx.$`You are tasked to detect if issue ${newIssueRef} is a duplicate of some of issues in ${otherIssueRef}.
+For each issue in ${otherIssueRef}, responds with the issue number, the resoaning to why it is a duplicate or not, and the final verdict: "DUP" for duplicate, "UNI" for unique.
 
-## Output format
-Explain your reasoning step by step.
-If NEW_ISSUE is a duplicate of OTHER_ISSUE, return "DUP". If it is not, return "UNI".
+## Output format:
+
+Respond in CSV format, with the following columns:
+- issue number
+- reasoning
+- verdict (DUP or UNI)
+
+
+
+## Example:
+
+123, "This issue is a duplicate of issue 123 because it has the same title and body", DUP
+456, "This issue is unique because it has a different title and body", UNI
+
 `.role("system");
+      ctx.$`issue_number, reasoning, verdict
+
+`.role("assistant");
     },
     {
-      flexTokens: 12000,
-      choices: ["UNI", "DUP"],
+      flexTokens: maxFlexTokens,
+      system: ["system.chain_of_draft"],
+      systemSafety: false,
+      responseType: "text",
       model: "small",
-    },
+    }
   );
+  if (res.error) {
+    console.error(`Error checking issues: ${res.error}`);
+    continue;
+  }
 
-  output.fence(res.text, "markdown");
-  const duplicate = /DUP/.test(res.text);
-  if (duplicate) {
-    output.note("found duplicate issue!");
-    const newComment = await github.createIssueComment(
-      issue.number,
-      `This issue is might be a duplicate of #${otherIssue.number}.
-> Generated by AI ([see logs](${runUrl})).`,
-    );
-    output.itemLink(`comment`, newComment.html_url);
-    cancel("found duplicate issue");
+  dbg(`ai response:\n%s`, res.text);
+  const lines =
+    res.fences?.find((f) => f.language === "csv")?.content ||
+    parsers.unfence(res.text, "csv");
+  const data = parsers.CSV(lines) || [];
+  for (const row of data) {
+    dbg(`row: %o`, row);
+    const { issue_number, reasoning, verdict } = row as {
+      issue_number: string;
+      reasoning: string;
+      verdict: string;
+    };
+    if (/DUP/.test(verdict) && !/UNI/.test(verdict)) {
+      const dupIssue = otherIssueGroup.find(
+        (i) => i.number === Number(issue_number)
+      );
+      if (dupIssue) duplicates.push(dupIssue);
+    }
+  }
+
+  if (duplicates.length >= maxDuplicates) {
+    dbg(`Found enough duplicates, stopping further checks.`);
+    break;
   }
 }
 
-output.p("All issues checked, no duplicates found.");
+if (!duplicates.length) cancel("No duplicates found.");
+
+output.p(`The following issues might be duplicates:`);
+for (const dup of duplicates) output.item(`#${dup.number}: ${dup.title}`);
