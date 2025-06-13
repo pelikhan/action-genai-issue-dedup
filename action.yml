@@ -1,17 +1,42 @@
 name: GenAI Issue Deduplicator
 description: GitHub Action Deduplication
 inputs:
+  count:
+    description: Number of issues to check for duplicates
+    required: false
+    default: 30
+  since:
+    description: Only check issues created after this date (ISO 8601 format)
+    required: false
+  labels:
+    description: List of labels to filter issues by
+    required: false
+  state:
+    description: State of the issues to check (open, closed, all)
+    required: false
+    default: open
+  max_duplicates:
+    description: Maximum number of duplicates to check for
+    required: false
+    default: 3
+  tokens_per_issue:
+    description: Number of tokens to use for each issue when checking for duplicates
+    required: false
+    default: 1000
   github_token:
-    description: "GitHub token with `models: read` permission at least."
+    description: "GitHub token with `models: read` permission at least
+      (https://microsoft.github.io/genaiscript/reference/github-actions/#github\
+      -models-permissions)."
     required: true
   github_issue:
     description: GitHub issue number to use when generating comments.
   debug:
-    description: Enable debug logging.
+    description: Enable debug logging
+      (https://microsoft.github.io/genaiscript/reference/scripts/logging/).
     required: false
 branding:
   icon: copy
-  color: blue
+  color: yellow
 runs:
   using: docker
   image: Dockerfile

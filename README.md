@@ -1,15 +1,33 @@
-# GenAI Issue Deduplicator
+# action action
 
 This script checks if an issue is a duplicate of another issue in the same repository.
-
 > [!NOTE]
-> This action uses GitHub Models for LLM inference.
+> This action uses [GitHub Models](https://github.com/models) for LLM inference.
 
 ## Inputs
 
-- `github_token`: GitHub token with `models: read` permission at least. (required)
-- `github_issue`: GitHub issue number to use when generating comments. (required)
-- `debug`: Enable debug logging.
+- `count`: Number of issues to check for duplicates (default: `30`)
+- `since`: Only check issues created after this date (ISO 8601 format)
+- `labels`: List of labels to filter issues by
+- `state`: State of the issues to check (open, closed, all) (default: `open`)
+- `max_duplicates`: Maximum number of duplicates to check for (default: `3`)
+- `tokens_per_issue`: Number of tokens to use for each issue when checking for duplicates (default: `1000`)
+- `github_token`: GitHub token with `models: read` permission at least (https://microsoft.github.io/genaiscript/reference/github-actions/#github-models-permissions). (required)
+- `debug`: Enable debug logging (https://microsoft.github.io/genaiscript/reference/scripts/logging/).
+
+## Outputs
+
+- `text`: The generated text output.
+
+## Usage
+
+Add the following to your step in your workflow file:
+
+```yaml
+uses: pelikhan/action-genai-issue-dedup@main
+with:
+  github_token: ${{ secrets.GITHUB_TOKEN }}
+```
 
 ## Example
 
@@ -95,4 +113,12 @@ The GenAIScript version is pinned in the `package.json` file. To upgrade it, run
 
 ```bash
 npm run upgrade
+```
+
+## Release
+
+To release a new version of this action, run the release script on a clean working directory.
+
+```bash
+npm run release
 ```
