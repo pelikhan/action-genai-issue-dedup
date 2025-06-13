@@ -53,12 +53,11 @@ permissions:
 ## Example
 
 ```yaml
-name: Find Duplicate Issues
+name: GenAI Find Duplicate Issues
 on:
   issues:
-    types: [opened, edited]
+    types: [opened, reopened]
 permissions:
-  contents: read
   models: read
   issues: write
 concurrency:
