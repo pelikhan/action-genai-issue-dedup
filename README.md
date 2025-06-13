@@ -38,9 +38,16 @@ This approach leverages LLM reasoning to semantically compare issues, providing 
 Add the following to your step in your workflow file:
 
 ```yaml
-uses: pelikhan/action-genai-issue-dedup@main
-with:
-  github_token: ${{ secrets.GITHUB_TOKEN }}
+...
+permissions:
+  models: read
+  issues: write
+...
+    steps:
+      - uses: pelikhan/action-genai-issue-dedup@v0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_issue: ${{ github.event.issue.number }}
 ```
 
 ## Example
