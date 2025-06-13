@@ -17,7 +17,7 @@
     "configure": "genaiscript configure action",
     "test": "echo 'No tests defined.'",
     "action": "genaiscript run action",
-    "dev": "DEBUG=script* GITHUB_ISSUE=6 genaiscript run action",
+    "dev": "DEBUG=script* INPUT_GITHUB_ISSUE=6 INPUT_LABEL_AS_DUPLICATE=true genaiscript run action",
     "start": "genaiscript run action --github-workspace --pull-request-comment --no-run-trace --no-output-trace",
     "release": "sh release.sh"
   }

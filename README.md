@@ -3,7 +3,6 @@ This action is designed to find duplicate issues in a GitHub repository using a 
 > [!NOTE]
 > This action uses [GitHub Models](https://github.com/models) for LLM inference.
 
-
 ## Algorithm
 
 The deduplication algorithm implemented in `genaisrc/action.genai.mts` operates as follows:
@@ -28,6 +27,8 @@ This approach leverages LLM reasoning to semantically compare issues, providing 
 - `state`: State of the issues to check (open, closed, all) (default: `open`)
 - `max_duplicates`: Maximum number of duplicates to check for (default: `3`)
 - `tokens_per_issue`: Number of tokens to use for each issue when checking for duplicates (default: `1000`)
+- `label_as_duplicate`: Add `duplicate` label to issues that are found to be duplicates (default: `false`)
+
 - `github_token`: GitHub token with `models: read` permission at least (https://microsoft.github.io/genaiscript/reference/github-actions/#github-models-permissions). (required)
 - `debug`: Enable debug logging (https://microsoft.github.io/genaiscript/reference/scripts/logging/).
 
@@ -36,16 +37,17 @@ This approach leverages LLM reasoning to semantically compare issues, providing 
 Add the following to your step in your workflow file:
 
 ```yaml
-...
+
+---
 permissions:
   models: read
   issues: write
-...
-    steps:
-      - uses: pelikhan/action-genai-issue-dedup@v0
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          github_issue: ${{ github.event.issue.number }}
+---
+steps:
+  - uses: pelikhan/action-genai-issue-dedup@v0
+    with:
+      github_token: ${{ secrets.GITHUB_TOKEN }}
+      github_issue: ${{ github.event.issue.number }}
 ```
 
 ## Example
@@ -59,7 +61,7 @@ on:
     inputs:
       issue_number:
         type: number
-        description: 'Issue number to process'
+        description: "Issue number to process"
         required: true
   issues:
     types: [opened, reopened]
@@ -104,16 +106,19 @@ npm run lint
 ```
 
 To typecheck the scripts, run:
+
 ```bash
 npm run typecheck
 ```
 
 To build the Docker image locally, run:
+
 ```bash
 npm run docker:build
 ```
 
 To run the action locally in Docker (build it first), use:
+
 ```bash
 npm run docker:start
 ```

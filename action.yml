@@ -23,6 +23,9 @@ inputs:
     description: Number of tokens to use for each issue when checking for duplicates
     required: false
     default: 1000
+  label_as_duplicate:
+    description: Label to apply to issues that are considered duplicates
+    default: duplicate
   github_token:
     description: "GitHub token with `models: read` permission at least
       (https://microsoft.github.io/genaiscript/reference/github-actions/#github\

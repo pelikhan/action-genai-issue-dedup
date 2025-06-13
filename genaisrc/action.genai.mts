@@ -42,19 +42,32 @@ script({
       description:
         "Number of tokens to use for each issue when checking for duplicates",
     },
+    labelAsDuplicate: {
+      type: "boolean",
+      description: "Apply duplicate label to the issue if duplicates are found",
+    },
   },
 });
 const { output, vars, dbg } = env;
 const issue = await github.getIssue();
 if (!issue)
   throw new Error(`Issue not found, did you forget to set "github_issue"?`);
-const { maxDuplicates, count, since, labels, state, tokensPerIssue } = vars as {
+const {
+  maxDuplicates,
+  count,
+  since,
+  labels,
+  state,
+  tokensPerIssue,
+  labelAsDuplicate,
+} = vars as {
   maxDuplicates: number;
   count: number;
   since: string;
   labels: string;
   state: "open" | "closed" | "all";
   tokensPerIssue: number;
+  labelAsDuplicate: boolean;
 };
 dbg(`issue`, issue.html_url);
 dbg(`state: %s`, state);
@@ -62,6 +75,7 @@ dbg(`labels: %s`, labels);
 dbg(`count: %s`, count);
 dbg(`since: %s`, since);
 dbg(`max duplicates: %s`, maxDuplicates);
+dbg(`apply label: %s`, labelAsDuplicate);
 
 // we only have 16k tokens, so we need to be careful with the prompt size
 // issuing one request per issue
@@ -176,3 +190,15 @@ if (!duplicates.length) cancel("No duplicates found.");
 
 output.p(`The following issues might be duplicates:`);
 for (const dup of duplicates) output.item(`#${dup.number}`);
+
+if (labelAsDuplicate) {
+  const labels: string[] = Array.from(
+    new Set([
+      ...(issue.labels?.map((l) => (typeof l === "string" ? l : l.name)) || []),
+      "duplicate",
+    ]),
+  );
+  dbg(`updating labels: %o`, labels);
+  await github.updateIssue(issue.number, { labels });
+  dbg(`updated issue: %s`, issue.html_url);
+}
