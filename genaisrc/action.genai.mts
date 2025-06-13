@@ -71,7 +71,7 @@ const otherIssues = (
     sort: "updated",
     direction: "asc",
     count,
-    since,
+    since: since || undefined,
     labels,
   })
 ).filter(({ number }) => number !== issue.number);
