@@ -1,6 +1,4 @@
-# action action
-
-This script checks if an issue is a duplicate of another issue in the same repository.
+This action is designed to find duplicate issues in a GitHub repository using a GenAI model. It retrieves the current issue and compares it against other issues in the repository, leveraging LLM reasoning to determine if they are duplicates.
 
 > [!NOTE]
 > This action uses [GitHub Models](https://github.com/models) for LLM inference.
