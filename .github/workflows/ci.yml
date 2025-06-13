@@ -29,3 +29,10 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           github_issue: 2
+          count: 10
+          since: '2023-01-01T00:00:00Z'
+          labels: 'bug,enhancement'
+          state: open
+          max_duplicates: 3
+          tokens_per_issue: 500
+          label_as_duplicate: true
