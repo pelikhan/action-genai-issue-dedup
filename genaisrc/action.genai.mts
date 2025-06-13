@@ -135,7 +135,7 @@ Respond in CSV format, with the following columns:
       system: ["system.chain_of_draft"],
       systemSafety: false,
       responseType: "text",
-      model: "github:openai/gpt-4o-mini",
+      model: "small",
       label: `Check for duplicates with ${otherIssueGroup
         .map((i) => i.number)
         .join(", ")}`,
