@@ -55,6 +55,12 @@ permissions:
 ```yaml
 name: GenAI Find Duplicate Issues
 on:
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        type: number
+        description: 'Issue number to process'
+        required: true
   issues:
     types: [opened, reopened]
 permissions:
