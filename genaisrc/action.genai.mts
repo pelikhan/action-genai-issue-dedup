@@ -136,6 +136,9 @@ Respond in CSV format, with the following columns:
       systemSafety: false,
       responseType: "text",
       model: "small",
+      label: `Check for duplicates with ${otherIssueGroup
+        .map((i) => i.number)
+        .join(", ")}`,
     }
   );
   if (res.error) {
