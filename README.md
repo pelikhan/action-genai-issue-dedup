@@ -50,6 +50,8 @@ permissions:
 
 ## Example
 
+Save this file under `.github/workflows/genai-issue-dedup.yml` in your repository:
+
 ```yaml
 name: GenAI Find Duplicate Issues
 on:
@@ -94,9 +96,6 @@ To **regenerate** the action files (`action.yml`, `Dockerfile`, `README.md`, `pa
 ```bash
 npm run configure
 ```
-
-> [!CAUTION]
-> This will overwrite any changes you made to these files!
 
 To lint script files, run:
 
