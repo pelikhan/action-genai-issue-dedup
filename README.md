@@ -9,15 +9,13 @@ The deduplication algorithm implemented in `genaisrc/action.genai.mts` operates 
 
 - **Issue Retrieval**: The script retrieves the current issue and a configurable set of other issues from the repository, filtered by state, labels, creation date, and count. The current issue is excluded from the comparison set.
 
-- **Prompt Construction**: For each group of issues, the script constructs a prompt that defines the current issue and the group of other issues (grouped to fit in the context window). The prompt instructs the LLM to compare the current issue against each candidate, providing a CSV output with the issue number, reasoning, and a verdict (`DUP` for duplicate, `UNI` for unique).
+- **Batch detection using small LLM**: For each group of issues, the script constructs a prompt that defines the current issue and the group of other issues (grouped to fit in the context window). The prompt instructs the **small** LLM to compare the current issue against each candidate, providing a CSV output with the issue number, reasoning, and a verdict (`DUP` for duplicate, `UNI` for unique).
 
-- **LLM Evaluation**: The prompt is sent to the LLM, which returns a CSV-formatted response. The script parses this response to identify which issues are considered duplicates based on the verdict column.
-
-- **Duplicate Aggregation**: The process continues in groups until the configured maximum number of duplicates (`maxDuplicates`) is found or all candidate issues are processed.
+- **Single duplicate validation using large LLM**: If the LLM identifies duplicates, the script runs a validation LLM prompt using a **large** model to confirm the duplicate hit.
 
 - **Result Output**: If duplicates are found, their issue numbers and titles are output. If no duplicates are found, the action is cancelled with an appropriate message.
 
-This approach leverages LLM reasoning to semantically compare issues, providing scalable and context-aware deduplication within the constraints of API limits and token budgets.
+
 
 ## Inputs
 

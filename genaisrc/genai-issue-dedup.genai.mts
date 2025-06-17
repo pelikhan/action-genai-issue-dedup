@@ -42,6 +42,11 @@ script({
       description:
         "Number of tokens to use for each issue when checking for duplicates",
     },
+    confirmDuplicates: {
+      type: "boolean",
+      default: true,
+      description: "Confirm duplicates with a large model before labeling",
+    },
     labelAsDuplicate: {
       type: "boolean",
       description: "Apply duplicate label to the issue if duplicates are found",
@@ -61,6 +66,7 @@ const {
   state,
   tokensPerIssue,
   labelAsDuplicate,
+  confirmDuplicates,
 } = vars as {
   maxDuplicates: number;
   count: number;
@@ -69,6 +75,7 @@ const {
   state: "open" | "closed" | "all";
   tokensPerIssue: number;
   labelAsDuplicate: boolean;
+  confirmDuplicates: boolean;
 };
 dbg(`issue`, issue.html_url);
 dbg(`state: %s`, state);
@@ -77,6 +84,7 @@ dbg(`count: %s`, count);
 dbg(`since: %s`, since);
 dbg(`max duplicates: %s`, maxDuplicates);
 dbg(`apply label: %s`, labelAsDuplicate);
+dbg(`confirm duplicates: %s`, confirmDuplicates);
 
 // we only have 8k tokens, so we need to be careful with the prompt size
 // issuing one request per issue
@@ -105,7 +113,7 @@ for (let i = 0; i < otherIssues.length; i += issuesPerGroup) {
   const res = await runPrompt(
     (ctx) => {
       let otherIssueRef: string;
-      for (const otherIssue of otherIssueGroup)
+      for (const otherIssue of otherIssueGroup) {
         otherIssueRef = ctx.def(
           "OTHER_ISSUE",
           `number: ${otherIssue.number}
@@ -113,6 +121,7 @@ ${otherIssue.title}
 ${otherIssue.body}`,
           { flex: 1 },
         );
+      }
       const newIssueRef = ctx.def(
         "NEW_ISSUE",
         `${issue.title}
@@ -131,8 +140,6 @@ Respond in CSV format, with the following columns:
 - issue number
 - reasoning
 - verdict (DUP or UNI)
-
-
 
 ## Example:
 
@@ -176,7 +183,51 @@ Respond in CSV format, with the following columns:
       const dupIssue = otherIssueGroup.find(
         (i) => i.number === Number(issue_number),
       );
-      if (dupIssue) duplicates.push(dupIssue);
+      if (dupIssue) {
+        dbg(`Found duplicate: #%d - %s`, dupIssue.number, dupIssue.title);
+        if (confirmDuplicates) {
+          // confirm duplicate with large model
+          const { text: confirmed } = await runPrompt(
+            (ctx) => {
+              const otherIssueRef = ctx.def(
+                "OTHER_ISSUE",
+                dupIssue.title + "\n" + dupIssue.body,
+                {
+                  flex: 1,
+                },
+              );
+              const newIssueRef = ctx.def(
+                "NEW_ISSUE",
+                issue.title + "\n" + issue.body,
+                {
+                  flex: 2,
+                },
+              );
+              ctx.$`You are tasked to confirm if issue ${otherIssueRef} is a duplicate of issue ${newIssueRef}.
+          Respond with your reasoning.
+          Respond with "DUP" if it is a duplicate, or "UNI" if it is not.`.role(
+                "system",
+              );
+            },
+            {
+              model: "large",
+              flexTokens: maxFlexTokens,
+              system: ["system.chain_of_draft"],
+              systemSafety: true,
+              responseType: "text",
+              label: `Confirm duplicate for #${dupIssue.number}`,
+            },
+          );
+          if (/DUP/.test(confirmed) && !/UNI/.test(confirmed)) {
+            dbg(`confirmed`);
+            duplicates.push(dupIssue);
+          } else {
+            dbg(`not confirmed: %s`, confirmed);
+          }
+        } else {
+          duplicates.push(dupIssue);
+        }
+      }
     }
   }
 

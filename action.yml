@@ -23,9 +23,13 @@ inputs:
     description: Number of tokens to use for each issue when checking for duplicates
     required: false
     default: 1000
+  confirm_duplicates:
+    description: Confirm duplicates with a large model before labeling
+    required: false
+    default: true
   label_as_duplicate:
-    description: Label to apply to issues that are considered duplicates
-    default: duplicate
+    description: Apply duplicate label to the issue if duplicates are found
+    required: false
   github_token:
     description: "GitHub token with `models: read` permission at least
       (https://microsoft.github.io/genaiscript/reference/github-actions/#github\
@@ -43,3 +47,6 @@ branding:
 runs:
   using: docker
   image: Dockerfile
+outputs:
+  text:
+    description: The generated text output.
