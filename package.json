@@ -3,7 +3,7 @@
   "version": "0.0.13",
   "description": "GitHub Action checks if an issue is a duplicate of another issue in the same repository.",
   "dependencies": {
-    "genaiscript": "1.142.9"
+    "genaiscript": "1.142.12"
   },
   "scripts": {
     "upgrade": "npx -y npm-check-updates -u && npm install",
@@ -14,11 +14,11 @@
     "lint": "npx --yes prettier --write genaisrc/",
     "fix": "genaiscript scripts fix",
     "typecheck": "genaiscript scripts compile",
-    "configure": "genaiscript configure action",
+    "configure": "genaiscript configure action genai-issue-dedup",
     "test": "echo 'No tests defined.'",
-    "action": "genaiscript run action",
-    "dev": "DEBUG=script* INPUT_GITHUB_ISSUE=6 INPUT_LABEL_AS_DUPLICATE=true genaiscript run action",
-    "start": "genaiscript run action --github-workspace --pull-request-comment --no-run-trace --no-output-trace",
+    "action": "genaiscript run genai-issue-dedup",
+    "dev": "DEBUG=script* INPUT_GITHUB_ISSUE=6 INPUT_LABEL_AS_DUPLICATE=true genaiscript run genai-issue-dedup",
+    "start": "genaiscript run genai-issue-dedup --github-workspace --pull-request-comment --no-run-trace --no-output-trace",
     "release": "sh release.sh"
   }
 }
