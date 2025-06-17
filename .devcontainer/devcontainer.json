@@ -1,0 +1,12 @@
+{
+  "name": "GitHub Action Dev Container",
+  "build": {
+    "dockerfile": "../Dockerfile"
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": ["esbenp.prettier-vscode"]
+    }
+  },
+  "features": {}
+}
