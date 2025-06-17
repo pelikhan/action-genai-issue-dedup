@@ -1,7 +1,7 @@
 {
   "name": "GitHub Action Dev Container",
   "build": {
-    "dockerfile": "../Dockerfile"
+    "dockerfile": "Dockerfile"
   },
   "customizations": {
     "vscode": {
