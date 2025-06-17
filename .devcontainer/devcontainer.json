@@ -8,5 +8,6 @@
       "extensions": ["esbenp.prettier-vscode"]
     }
   },
-  "features": {}
+  "features": {},
+  "postCreateCommand": "npm ci"
 }
