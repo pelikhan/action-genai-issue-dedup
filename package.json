@@ -1,6 +1,6 @@
 {
   "private": true,
-  "version": "0.0.13",
+  "version": "0.0.14",
   "description": "GitHub Action checks if an issue is a duplicate of another issue in the same repository.",
   "dependencies": {
     "genaiscript": "1.142.12"
