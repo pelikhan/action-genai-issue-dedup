@@ -48,6 +48,7 @@ script({
     },
   },
 });
+const maxFlexTokens = 7000;
 const { output, vars, dbg } = env;
 const issue = await github.getIssue();
 if (!issue)
@@ -77,7 +78,7 @@ dbg(`since: %s`, since);
 dbg(`max duplicates: %s`, maxDuplicates);
 dbg(`apply label: %s`, labelAsDuplicate);
 
-// we only have 16k tokens, so we need to be careful with the prompt size
+// we only have 8k tokens, so we need to be careful with the prompt size
 // issuing one request per issue
 const otherIssues = (
   await github.listIssues({
@@ -92,7 +93,6 @@ const otherIssues = (
 dbg(`Found %d issues in the repository`, otherIssues.length);
 
 const duplicates: GitHubIssue[] = [];
-const maxFlexTokens = 12000;
 const issuesPerGroup = Math.ceil(maxFlexTokens / tokensPerIssue);
 
 dbg(`tokens per issue: %s`, tokensPerIssue);
