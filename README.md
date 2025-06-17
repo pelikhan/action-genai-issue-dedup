@@ -37,7 +37,6 @@ This approach leverages LLM reasoning to semantically compare issues, providing 
 Add the following to your step in your workflow file:
 
 ```yaml
-
 ---
 permissions:
   models: read
@@ -47,7 +46,6 @@ steps:
   - uses: pelikhan/action-genai-issue-dedup@v0
     with:
       github_token: ${{ secrets.GITHUB_TOKEN }}
-      github_issue: ${{ github.event.issue.number }}
 ```
 
 ## Example
@@ -57,12 +55,6 @@ Save this file under `.github/workflows/genai-issue-dedup.yml` in your repositor
 ```yaml
 name: GenAI Find Duplicate Issues
 on:
-  workflow_dispatch:
-    inputs:
-      issue_number:
-        type: number
-        description: "Issue number to process"
-        required: true
   issues:
     types: [opened, reopened]
 permissions:
@@ -79,7 +71,6 @@ jobs:
         uses: pelikhan/action-genai-issue-dedup@v0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          github_issue: ${{ github.event.issue.number }}
 ```
 
 ## Development
@@ -93,7 +84,7 @@ We recommend updating the script metadata instead of editing the action files di
 - the readme description is the script description
 - the action branding is the script branding
 
-To **regenerate** the action files (`action.yml`, `Dockerfile`, `README.md`, `package.json`, `.gitignore`), run:
+To **regenerate** the action files (`action.yml`), run:
 
 ```bash
 npm run configure
