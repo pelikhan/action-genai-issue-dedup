@@ -17,7 +17,6 @@
       },
       "extensions": [
         "GitHub.vscode-github-actions",
-        "dbaeumer.vscode-eslint",
         "esbenp.prettier-vscode",
         "GitHub.copilot-chat",
         "genaiscript.genaiscript-vscode"
