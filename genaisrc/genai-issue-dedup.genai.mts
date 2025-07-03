@@ -20,7 +20,7 @@ script({
     },
     labels: {
       type: "string",
-      description: "List of labels to filter issues by",
+      description: "List of labels to filter issues by.",
     },
     state: {
       type: "string",
@@ -58,7 +58,7 @@ const { output, vars, dbg } = env;
 const issue = await github.getIssue();
 if (!issue)
   throw new Error(`Issue not found, did you forget to set "github_issue"?`);
-const {
+let {
   maxDuplicates,
   count,
   since,
@@ -85,6 +85,8 @@ dbg(`since: %s`, since);
 dbg(`max duplicates: %s`, maxDuplicates);
 dbg(`apply label: %s`, labelAsDuplicate);
 dbg(`confirm duplicates: %s`, confirmDuplicates);
+
+if (!labels) labels = await inferIssueLabels();
 
 // we only have 8k tokens, so we need to be careful with the prompt size
 // issuing one request per issue
@@ -119,7 +121,7 @@ for (let i = 0; i < otherIssues.length; i += issuesPerGroup) {
           `number: ${otherIssue.number}
 ${otherIssue.title}
 ${otherIssue.body}`,
-          { flex: 1 },
+          { flex: 1 }
         );
       }
       const newIssueRef = ctx.def(
@@ -128,7 +130,7 @@ ${otherIssue.body}`,
 ${issue.body}`,
         {
           maxTokens: tokensPerIssue * 2,
-        },
+        }
       );
 
       ctx.$`You are tasked to detect if issue ${newIssueRef} is a duplicate of some of issues in ${otherIssueRef}.
@@ -160,7 +162,7 @@ Respond in CSV format, with the following columns:
       label: `Check for duplicates with ${otherIssueGroup
         .map((i) => i.number)
         .join(", ")}`,
-    },
+    }
   );
   if (res.error) {
     console.error(`Error checking issues: ${res.error.message}`);
@@ -181,7 +183,7 @@ Respond in CSV format, with the following columns:
     };
     if (/DUP/.test(verdict) && !/UNI/.test(verdict)) {
       const dupIssue = otherIssueGroup.find(
-        (i) => i.number === Number(issue_number),
+        (i) => i.number === Number(issue_number)
       );
       if (dupIssue) {
         dbg(`Found duplicate: #%d - %s`, dupIssue.number, dupIssue.title);
@@ -194,19 +196,19 @@ Respond in CSV format, with the following columns:
                 dupIssue.title + "\n" + dupIssue.body,
                 {
                   flex: 1,
-                },
+                }
               );
               const newIssueRef = ctx.def(
                 "NEW_ISSUE",
                 issue.title + "\n" + issue.body,
                 {
                   flex: 2,
-                },
+                }
               );
               ctx.$`You are tasked to confirm if issue ${otherIssueRef} is a duplicate of issue ${newIssueRef}.
           Respond with your reasoning.
           Respond with "DUP" if it is a duplicate, or "UNI" if it is not.`.role(
-                "system",
+                "system"
               );
             },
             {
@@ -216,7 +218,7 @@ Respond in CSV format, with the following columns:
               systemSafety: true,
               responseType: "text",
               label: `Confirm duplicate for #${dupIssue.number}`,
-            },
+            }
           );
           if (/DUP/.test(confirmed) && !/UNI/.test(confirmed)) {
             dbg(`confirmed`);
@@ -247,9 +249,57 @@ if (labelAsDuplicate) {
     new Set([
       ...(issue.labels?.map((l) => (typeof l === "string" ? l : l.name)) || []),
       "duplicate",
-    ]),
+    ])
   );
   dbg(`updating labels: %o`, labels);
   await github.updateIssue(issue.number, { labels });
   dbg(`updated issue: %s`, issue.html_url);
+}
+
+async function inferIssueLabels() {
+  dbg(`inferring lables from issue`);
+  const labels = await github.listIssueLabels();
+  const { fences, text, error } = await runPrompt(
+    (ctx) => {
+      ctx.$`You are a GitHub issue triage bot. Your task is to analyze the issue and suggest labels based on its content.
+
+## Output format
+Respond with a list of "<label name> = <reasoning>" pairs, one per line in INI format.
+If you think the issue does not fit any of the provided labels, respond with "no label".
+Rank the labels by relevance, with the most relevant label first.
+
+\`\`\`\ini
+label1 = reasoning1
+label2 = reasoning2
+\`\`\`
+...
+
+`.role("system");
+      ctx.def(
+        "LABELS",
+        labels
+          .map(({ name, description }) => `${name}: ${description}`)
+          .join("\n")
+      );
+      ctx.def("ISSUE", `${issue.title}\n${issue.body}`);
+    },
+    {
+      responseType: "text",
+      systemSafety: false,
+      label: "Assigning labels to GitHub issue",
+      model: "small",
+    }
+  );
+  if (error) cancel(`error while running the prompt: ${error.message}`);
+  const entries = parsers.INI(
+    fences.find((f) => f.language === "ini")?.content || text,
+    { defaultValue: {} }
+  ) as Record<string, string>;
+  dbg(`entries: %O`, entries);
+  const matchedLabels = Object.entries(entries)
+    .map(([label]) => label.trim())
+    .filter((label) => labels.some((l) => l.name === label))
+    .slice(0, 3);
+  dbg(`matched: %o`, matchedLabels);
+  return matchedLabels.join(",");
 }

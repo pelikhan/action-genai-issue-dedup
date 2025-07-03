@@ -1,4 +1,4 @@
 {
-    "genaiscript.cli.path": "node_modules/genaiscript/built/genaiscript.cjs",
+    "genaiscript.cli.path": "node_modules/genaiscript/dist/src/index.js",
     "genaiscript.cli.packageManager": "npm"
 }
