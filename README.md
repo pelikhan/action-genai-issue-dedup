@@ -1,7 +1,12 @@
+# Continous Issue Deduplicator
+
 This action is designed to find duplicate issues in a GitHub repository using a GenAI model. It retrieves the current issue and compares it against other issues in the repository, leveraging LLM reasoning to determine if they are duplicates.
 
 > [!NOTE]
 > This action uses [GitHub Models](https://github.com/models) for LLM inference.
+
+- [French](./README.fr.md)
+- [Spanish](./README.es.md)
 
 ## Algorithm
 
@@ -14,8 +19,6 @@ The deduplication algorithm implemented in `genaisrc/action.genai.mts` operates 
 - **Single duplicate validation using large LLM**: If the LLM identifies duplicates, the script runs a validation LLM prompt using a **large** model to confirm the duplicate hit.
 
 - **Result Output**: If duplicates are found, their issue numbers and titles are output. If no duplicates are found, the action is cancelled with an appropriate message.
-
-
 
 ## Inputs
 
