@@ -1,7 +1,12 @@
+# Dédupliqueur Continu d'Incidents
+
 Cette action est conçue pour trouver des problèmes en double dans un dépôt GitHub à l'aide d'un modèle GenAI. Elle récupère le problème actuel et le compare aux autres problèmes du dépôt, en tirant parti du raisonnement LLM pour déterminer s'ils sont des doublons.
 
 > \[!NOTE]
 > Cette action utilise les [GitHub Models](https://github.com/models) pour l'inférence LLM.
+
+* [Français](./README.fr.md)
+* [Espagnol](./README.es.md)
 
 ## Algorithme
 

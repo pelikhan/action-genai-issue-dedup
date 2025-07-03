@@ -1,7 +1,12 @@
+# Deduplicador Continuo de Incidencias
+
 Esta acción está diseñada para encontrar incidencias duplicadas en un repositorio de GitHub utilizando un modelo GenAI. Recupera la incidencia actual y la compara con otras incidencias del repositorio, aprovechando el razonamiento del LLM para determinar si son duplicados.
 
 > \[!NOTA]
 > Esta acción utiliza los [GitHub Models](https://github.com/models) para la inferencia del LLM.
+
+* [Francés](./README.fr.md)
+* [Español](./README.es.md)
 
 ## Algoritmo
 
