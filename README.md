@@ -5,9 +5,6 @@ This action is designed to find duplicate issues in a GitHub repository using a 
 > [!NOTE]
 > This action uses [GitHub Models](https://github.com/models) for LLM inference.
 
-- [French](./README.fr.md)
-- [Spanish](./README.es.md)
-
 ## Algorithm
 
 The deduplication algorithm implemented in `genaisrc/action.genai.mts` operates as follows:

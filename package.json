@@ -3,7 +3,7 @@
   "version": "0.0.17",
   "description": "GitHub Action checks if an issue is a duplicate of another issue in the same repository.",
   "dependencies": {
-    "genaiscript": "1.142.12"
+    "genaiscript": "2.2.9"
   },
   "scripts": {
     "upgrade": "npx -y npm-check-updates -u && npm install",
