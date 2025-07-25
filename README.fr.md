@@ -23,7 +23,7 @@ L'algorithme de déduplication implémenté dans `genaisrc/action.genai.mts` fon
 
 * `since` : Vérifier uniquement les problèmes créés après cette date (format ISO 8601)
 
-* `labels` : Liste des étiquettes pour filtrer les problèmes
+* `labels` : Liste des étiquettes pour filtrer les problèmes, ou `auto` pour classifier automatiquement le problème et utiliser ces étiquettes
 
 * `state` : État des problèmes à vérifier (ouvert, fermé, tous) (par défaut : `ouvert`)
 

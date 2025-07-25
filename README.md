@@ -21,7 +21,7 @@ The deduplication algorithm implemented in `genaisrc/action.genai.mts` operates 
 
 - `count`: Number of issues to check for duplicates (default: `30`)
 - `since`: Only check issues created after this date (ISO 8601 format)
-- `labels`: List of labels to filter issues by
+- `labels`: List of labels to filter issues by, or `auto` to automatically classify the issue and use those labels
 - `state`: State of the issues to check (open, closed, all) (default: `open`)
 - `max_duplicates`: Maximum number of duplicates to check for (default: `3`)
 - `tokens_per_issue`: Number of tokens to use for each issue when checking for duplicates (default: `1000`)
