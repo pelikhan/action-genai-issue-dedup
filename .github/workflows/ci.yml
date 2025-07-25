@@ -36,4 +36,4 @@ jobs:
           max_duplicates: 3
           tokens_per_issue: 500
           label_as_duplicate: true
-          debug: "*"
+          debug: "script*"

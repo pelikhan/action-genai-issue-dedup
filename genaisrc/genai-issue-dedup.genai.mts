@@ -1,3 +1,4 @@
+import { uniqBy } from "@genaiscript/runtime";
 script({
   title: "GitHub Action Deduplication",
   description: `This script checks if an issue is a duplicate of another issue in the same repository.`,
@@ -88,7 +89,11 @@ dbg(`apply label: %s`, labelAsDuplicate);
 dbg(`confirm duplicates: %s`, confirmDuplicates);
 
 // Handle "auto" mode for label classification
-let effectiveLabels = labels;
+let effectiveLabels: string[] =
+  labels
+    ?.split(",")
+    .map((l) => l.trim())
+    .filter(Boolean) || [];
 if (labels === "auto") {
   dbg(`Auto mode detected, classifying issue against repository labels`);
 
@@ -96,12 +101,12 @@ if (labels === "auto") {
   const repositoryLabels = await github.listIssueLabels();
   const disallowedLabels = ["duplicate", "wontfix"];
   const availableLabels = repositoryLabels.filter(
-    (label) => !disallowedLabels.includes(label.name),
+    (label) => !disallowedLabels.includes(label.name)
   );
 
   if (availableLabels.length === 0) {
     dbg(`No available labels found for classification`);
-    effectiveLabels = "";
+    effectiveLabels = [];
   } else {
     dbg(`Found %d available labels for classification`, availableLabels.length);
 
@@ -109,7 +114,7 @@ if (labels === "auto") {
     const { fences, text, error } = await runPrompt(
       (ctx) => {
         ctx.$`You are a GitHub issue classification bot. Your task is to analyze the issue and suggest relevant labels based on its content.`.role(
-          "system",
+          "system"
         );
         ctx.$`## Output format
 
@@ -128,37 +133,31 @@ label2 = reasoning2
           "LABELS",
           availableLabels
             .map(({ name, description }) => `${name}: ${description || ""}`)
-            .join("\n"),
+            .join("\n")
         );
         ctx.def("ISSUE", `${issue.title}\n${issue.body}`);
       },
       {
         responseType: "text",
         systemSafety: false,
-        label: "Classifying issue for auto label mode",
+        label: "labelling issue for filtering",
         model: "small",
-      },
+      }
     );
 
     if (error) {
-      dbg(`Error during label classification: %s`, error.message);
-      effectiveLabels = "";
+      effectiveLabels = [];
     } else {
-      dbg(`Classification response:\n%s`, text);
       const entries = parsers.INI(
         fences.find((f) => f.language === "ini")?.content || text,
-        { defaultValue: {} },
+        { defaultValue: {} }
       ) as Record<string, string>;
       const classifiedLabels = Object.keys(entries)
         .map((label) => label.trim())
         .filter((label) => availableLabels.some((l) => l.name === label));
-
-      if (classifiedLabels.length === 0) {
-        dbg(`No labels matched from classification`);
-        effectiveLabels = "";
-      } else {
-        effectiveLabels = classifiedLabels.join(",");
-        dbg(`Classified labels: %s`, effectiveLabels);
+      if (classifiedLabels.length) {
+        dbg(`inferred labels: %s`, classifiedLabels.join(", "));
+        effectiveLabels = classifiedLabels.map((l) => l.trim()).filter(Boolean);
       }
     }
   }
@@ -166,17 +165,28 @@ label2 = reasoning2
 
 // we only have 8k tokens, so we need to be careful with the prompt size
 // issuing one request per issue
-const otherIssues = (
-  await github.listIssues({
+let otherIssues = [];
+for (const label of effectiveLabels.length ? effectiveLabels : [undefined]) {
+  dbg(`fetching issues with label: %s`, label || "*");
+  const res = await github.listIssues({
     state,
     sort: "updated",
     direction: "desc",
     count,
     since: since || undefined,
-    labels: effectiveLabels,
-  })
-).filter(({ number }) => number !== issue.number);
-dbg(`Found %d issues in the repository`, otherIssues.length);
+    labels: label,
+  });
+  dbg(
+    `found %d issues: %s`,
+    res.length,
+    res.map((i) => `#${i.number}`).join(", ")
+  );
+  otherIssues.push(...res);
+}
+otherIssues = uniqBy(otherIssues, (i) => i.number).filter(
+  ({ number }) => number !== issue.number
+);
+dbg(`unique issues candidates: %d`, otherIssues.length);
 
 const duplicates: GitHubIssue[] = [];
 const issuesPerGroup = Math.ceil(maxFlexTokens / tokensPerIssue);
@@ -197,7 +207,7 @@ for (let i = 0; i < otherIssues.length; i += issuesPerGroup) {
           `number: ${otherIssue.number}
 ${otherIssue.title}
 ${otherIssue.body}`,
-          { flex: 1 },
+          { flex: 1 }
         );
       }
       const newIssueRef = ctx.def(
@@ -206,7 +216,7 @@ ${otherIssue.body}`,
 ${issue.body}`,
         {
           maxTokens: tokensPerIssue * 2,
-        },
+        }
       );
 
       ctx.$`You are tasked to detect if issue ${newIssueRef} is a duplicate of some of issues in ${otherIssueRef}.
@@ -238,7 +248,7 @@ Respond in CSV format, with the following columns:
       label: `Check for duplicates with ${otherIssueGroup
         .map((i) => i.number)
         .join(", ")}`,
-    },
+    }
   );
   if (res.error) {
     console.error(`Error checking issues: ${res.error.message}`);
@@ -259,7 +269,7 @@ Respond in CSV format, with the following columns:
     };
     if (/DUP/.test(verdict) && !/UNI/.test(verdict)) {
       const dupIssue = otherIssueGroup.find(
-        (i) => i.number === Number(issue_number),
+        (i) => i.number === Number(issue_number)
       );
       if (dupIssue) {
         dbg(`Found duplicate: #%d - %s`, dupIssue.number, dupIssue.title);
@@ -272,19 +282,19 @@ Respond in CSV format, with the following columns:
                 dupIssue.title + "\n" + dupIssue.body,
                 {
                   flex: 1,
-                },
+                }
               );
               const newIssueRef = ctx.def(
                 "NEW_ISSUE",
                 issue.title + "\n" + issue.body,
                 {
                   flex: 2,
-                },
+                }
               );
               ctx.$`You are tasked to confirm if issue ${otherIssueRef} is a duplicate of issue ${newIssueRef}.
           Respond with your reasoning.
           Respond with "DUP" if it is a duplicate, or "UNI" if it is not.`.role(
-                "system",
+                "system"
               );
             },
             {
@@ -294,7 +304,7 @@ Respond in CSV format, with the following columns:
               systemSafety: true,
               responseType: "text",
               label: `Confirm duplicate for #${dupIssue.number}`,
-            },
+            }
           );
           if (/DUP/.test(confirmed) && !/UNI/.test(confirmed)) {
             dbg(`confirmed`);
@@ -325,7 +335,7 @@ if (labelAsDuplicate) {
     new Set([
       ...(issue.labels?.map((l) => (typeof l === "string" ? l : l.name)) || []),
       "duplicate",
-    ]),
+    ])
   );
   dbg(`updating labels: %o`, labels);
   await github.updateIssue(issue.number, { labels });
