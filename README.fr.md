@@ -9,7 +9,9 @@ Cette action est conçue pour trouver des problèmes en double dans un dépôt G
 
 L'algorithme de déduplication implémenté dans `genaisrc/action.genai.mts` fonctionne comme suit :
 
-* **Récupération des Problèmes** : Le script récupère le problème actuel et un ensemble configurable d'autres problèmes du dépôt, filtrés par état, étiquettes, date de création et nombre. Le problème actuel est exclu de l'ensemble de comparaison.
+* **Classification des Étiquettes (Mode Auto)** : Lorsque `labels` est défini sur `auto`, le script récupère d'abord toutes les étiquettes du dépôt et utilise un **petit** LLM pour classifier le problème actuel par rapport à ces étiquettes. Les étiquettes classifiées sont ensuite utilisées pour filtrer les problèmes à l'étape suivante.
+
+* **Récupération des Problèmes** : Le script récupère le problème actuel et un ensemble configurable d'autres problèmes du dépôt, filtrés par état, étiquettes (ou étiquettes auto-classifiées), date de création et nombre. Le problème actuel est exclu de l'ensemble de comparaison.
 
 * **Détection par lot utilisant un petit LLM** : Pour chaque groupe de problèmes, le script construit une invite qui définit le problème actuel et le groupe d'autres problèmes (groupés pour tenir dans la fenêtre contextuelle). L'invite demande au **petit** LLM de comparer le problème actuel à chaque candidat, fournissant une sortie CSV avec le numéro du problème, le raisonnement et un verdict (`DUP` pour doublon, `UNI` pour unique).
 

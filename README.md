@@ -9,7 +9,9 @@ This action is designed to find duplicate issues in a GitHub repository using a 
 
 The deduplication algorithm implemented in `genaisrc/action.genai.mts` operates as follows:
 
-- **Issue Retrieval**: The script retrieves the current issue and a configurable set of other issues from the repository, filtered by state, labels, creation date, and count. The current issue is excluded from the comparison set.
+- **Label Classification (Auto Mode)**: When `labels` is set to `auto`, the script first retrieves all repository labels and uses a **small** LLM to classify the current issue against those labels. The classified labels are then used for filtering issues in the next step.
+
+- **Issue Retrieval**: The script retrieves the current issue and a configurable set of other issues from the repository, filtered by state, labels (or auto-classified labels), creation date, and count. The current issue is excluded from the comparison set.
 
 - **Batch detection using small LLM**: For each group of issues, the script constructs a prompt that defines the current issue and the group of other issues (grouped to fit in the context window). The prompt instructs the **small** LLM to compare the current issue against each candidate, providing a CSV output with the issue number, reasoning, and a verdict (`DUP` for duplicate, `UNI` for unique).
 
