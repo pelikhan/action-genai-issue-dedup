@@ -22,7 +22,7 @@ El algoritmo de deduplicación implementado en `genaisrc/action.genai.mts` opera
 
 * `since`: Solo comprobar problemas creados después de esta fecha (formato ISO 8601)
 
-* `labels`: Lista de etiquetas para filtrar problemas
+* `labels`: Lista de etiquetas para filtrar problemas, o `auto` para clasificar automáticamente el problema y usar esas etiquetas
 
 * `state`: Estado de los problemas a comprobar (abiertos, cerrados, todos) (por defecto: `open`)
 

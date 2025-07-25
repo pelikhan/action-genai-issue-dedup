@@ -20,7 +20,8 @@ script({
     },
     labels: {
       type: "string",
-      description: "List of labels to filter issues by",
+      description:
+        "List of labels to filter issues by, or 'auto' to automatically classify the issue and use those labels",
     },
     state: {
       type: "string",
@@ -86,6 +87,83 @@ dbg(`max duplicates: %s`, maxDuplicates);
 dbg(`apply label: %s`, labelAsDuplicate);
 dbg(`confirm duplicates: %s`, confirmDuplicates);
 
+// Handle "auto" mode for label classification
+let effectiveLabels = labels;
+if (labels === "auto") {
+  dbg(`Auto mode detected, classifying issue against repository labels`);
+
+  // Get all available labels from the repository
+  const repositoryLabels = await github.listIssueLabels();
+  const disallowedLabels = ["duplicate", "wontfix"];
+  const availableLabels = repositoryLabels.filter(
+    (label) => !disallowedLabels.includes(label.name),
+  );
+
+  if (availableLabels.length === 0) {
+    dbg(`No available labels found for classification`);
+    effectiveLabels = "";
+  } else {
+    dbg(`Found %d available labels for classification`, availableLabels.length);
+
+    // Classify the issue using LLM
+    const { fences, text, error } = await runPrompt(
+      (ctx) => {
+        ctx.$`You are a GitHub issue classification bot. Your task is to analyze the issue and suggest relevant labels based on its content.`.role(
+          "system",
+        );
+        ctx.$`## Output format
+
+Respond with a list of "<label name> = <reasoning>" pairs, one per line in INI format.
+If you think the issue does not fit any of the provided labels, respond with "no label".
+Rank the labels by relevance, with the most relevant label first.
+
+\`\`\`ini
+label1 = reasoning1
+label2 = reasoning2
+\`\`\`
+...
+
+`.role("system");
+        ctx.def(
+          "LABELS",
+          availableLabels
+            .map(({ name, description }) => `${name}: ${description || ""}`)
+            .join("\n"),
+        );
+        ctx.def("ISSUE", `${issue.title}\n${issue.body}`);
+      },
+      {
+        responseType: "text",
+        systemSafety: false,
+        label: "Classifying issue for auto label mode",
+        model: "small",
+      },
+    );
+
+    if (error) {
+      dbg(`Error during label classification: %s`, error.message);
+      effectiveLabels = "";
+    } else {
+      dbg(`Classification response:\n%s`, text);
+      const entries = parsers.INI(
+        fences.find((f) => f.language === "ini")?.content || text,
+        { defaultValue: {} },
+      ) as Record<string, string>;
+      const classifiedLabels = Object.keys(entries)
+        .map((label) => label.trim())
+        .filter((label) => availableLabels.some((l) => l.name === label));
+
+      if (classifiedLabels.length === 0) {
+        dbg(`No labels matched from classification`);
+        effectiveLabels = "";
+      } else {
+        effectiveLabels = classifiedLabels.join(",");
+        dbg(`Classified labels: %s`, effectiveLabels);
+      }
+    }
+  }
+}
+
 // we only have 8k tokens, so we need to be careful with the prompt size
 // issuing one request per issue
 const otherIssues = (
@@ -95,7 +173,7 @@ const otherIssues = (
     direction: "desc",
     count,
     since: since || undefined,
-    labels,
+    labels: effectiveLabels,
   })
 ).filter(({ number }) => number !== issue.number);
 dbg(`Found %d issues in the repository`, otherIssues.length);

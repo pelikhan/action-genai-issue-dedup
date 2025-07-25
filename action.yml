@@ -9,7 +9,7 @@ inputs:
     description: Only check issues created after this date (ISO 8601 format)
     required: false
   labels:
-    description: List of labels to filter issues by
+    description: List of labels to filter issues by, or 'auto' to automatically classify the issue and use those labels
     required: false
   state:
     description: State of the issues to check (open, closed, all)
