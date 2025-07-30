@@ -30,6 +30,20 @@ inputs:
   label_as_duplicate:
     description: Apply duplicate label to the issue if duplicates are found
     required: false
+  issue_range:
+    description: Range of issues to process (e.g., '1-10', 'all', 'current', or single number like '5')
+    required: false
+    default: current
+  start_issue:
+    description: Starting issue number for range (used with end_issue)
+    required: false
+  end_issue:
+    description: Ending issue number for range (used with start_issue)
+    required: false
+  max_issues:
+    description: Maximum number of issues to process when using 'all' range
+    required: false
+    default: 50
   github_token:
     description: "GitHub token with `models: read` permission at least
       (https://microsoft.github.io/genaiscript/reference/github-actions/#github\
