@@ -1,6 +1,12 @@
 # Continous Issue Deduplicator
 
-This action is designed to find duplicate issues in a GitHub repository using a GenAI model. It retrieves the current issue and compares it against other issues in the repository, leveraging LLM reasoning to determine if they are duplicates.
+This action is designed to find duplicate issues in a GitHub repository using a GenAI model. It can process single issues or batch process multiple issues, comparing them against other issues in the repository and leveraging LLM reasoning to determine if they are duplicates.
+
+When processing multiple issues, the action generates a comprehensive markdown report showing:
+- Summary of issues processed
+- Comparison between current duplicate labels and detected duplicates
+- Detailed analysis for each issue including reasoning from the AI
+- Identification of potential false positives and newly detected duplicates
 
 > [!NOTE]
 > This action uses [GitHub Models](https://github.com/models) for LLM inference.
@@ -28,6 +34,14 @@ The deduplication algorithm implemented in `genaisrc/action.genai.mts` operates 
 - `max_duplicates`: Maximum number of duplicates to check for (default: `3`)
 - `tokens_per_issue`: Number of tokens to use for each issue when checking for duplicates (default: `1000`)
 - `label_as_duplicate`: Add `duplicate` label to issues that are found to be duplicates (default: `false`)
+- `issue_range`: Range of issues to process (default: `current`)
+  - `current`: Process only the current issue (original behavior)
+  - `all`: Process all issues up to `max_issues` limit
+  - `1-10`: Process issues from 1 to 10
+  - `5`: Process only issue #5
+- `start_issue`: Starting issue number for range (alternative to range syntax)
+- `end_issue`: Ending issue number for range (used with `start_issue`)
+- `max_issues`: Maximum number of issues to process when using `all` range (default: `50`)
 
 - `github_token`: GitHub token with `models: read` permission at least (https://microsoft.github.io/genaiscript/reference/github-actions/#github-models-permissions). (required)
 - `debug`: Enable debug logging (https://microsoft.github.io/genaiscript/reference/scripts/logging/).
@@ -36,6 +50,7 @@ The deduplication algorithm implemented in `genaisrc/action.genai.mts` operates 
 
 Add the following to your step in your workflow file:
 
+### Single Issue Processing (Original Behavior)
 ```yaml
 ---
 permissions:
@@ -46,6 +61,40 @@ steps:
   - uses: pelikhan/action-genai-issue-dedup@v0
     with:
       github_token: ${{ secrets.GITHUB_TOKEN }}
+      issue_range: current
+```
+
+### Batch Processing Examples
+
+Process a range of issues and generate a markdown report:
+```yaml
+steps:
+  - uses: pelikhan/action-genai-issue-dedup@v0
+    with:
+      github_token: ${{ secrets.GITHUB_TOKEN }}
+      issue_range: "1-50"  # Process issues #1 through #50
+      label_as_duplicate: true
+```
+
+Process all recent issues:
+```yaml
+steps:
+  - uses: pelikhan/action-genai-issue-dedup@v0
+    with:
+      github_token: ${{ secrets.GITHUB_TOKEN }}
+      issue_range: "all"
+      max_issues: 100  # Limit to 100 most recent issues
+      state: "open"
+```
+
+Process specific issue range using parameters:
+```yaml
+steps:
+  - uses: pelikhan/action-genai-issue-dedup@v0
+    with:
+      github_token: ${{ secrets.GITHUB_TOKEN }}
+      start_issue: 10
+      end_issue: 20
 ```
 
 ## Example
@@ -72,6 +121,31 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
 ```
+
+## Report Format
+
+When processing multiple issues (using `issue_range` other than `current`), the action generates a detailed markdown report with the following sections:
+
+### Summary
+- Total issues processed
+- Issues currently marked as duplicate
+- Issues with duplicates found by the script
+- Processing errors encountered
+
+### Analysis  
+- New duplicates detected (not currently marked)
+- Potential false positives (marked as duplicate but no duplicates found)
+- Confirmed duplicates (marked as duplicate and duplicates found)
+
+### Detailed Results
+For each processed issue:
+- Current duplicate status (marked vs not marked)  
+- Detection results (duplicates found vs none found)
+- List of found duplicates with links
+- AI reasoning for duplicate detection
+- Any processing errors
+
+This comprehensive report helps maintainers review the current state of duplicate labeling and identify issues that may need attention.
 
 ## Development
 

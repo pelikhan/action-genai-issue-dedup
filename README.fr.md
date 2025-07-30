@@ -1,6 +1,12 @@
 # Déduplication Continue des Problèmes
 
-Cette action est conçue pour trouver des problèmes en double dans un dépôt GitHub en utilisant un modèle GenAI. Elle récupère le problème actuel et le compare à d'autres problèmes dans le dépôt, en utilisant le raisonnement LLM pour déterminer s'ils sont en double.
+Cette action est conçue pour trouver des problèmes en double dans un dépôt GitHub en utilisant un modèle GenAI. Elle peut traiter des problèmes individuels ou traiter par lot plusieurs problèmes, en les comparant à d'autres problèmes dans le dépôt et en utilisant le raisonnement LLM pour déterminer s'ils sont en double.
+
+Lors du traitement de plusieurs problèmes, l'action génère un rapport markdown complet montrant :
+- Résumé des problèmes traités  
+- Comparaison entre les étiquettes de doublons actuelles et les doublons détectés
+- Analyse détaillée pour chaque problème incluant le raisonnement de l'IA
+- Identification des faux positifs potentiels et des doublons nouvellement détectés
 
 > \[!NOTE]
 > Cette action utilise [GitHub Models](https://github.com/models) pour l'inférence LLM.
